@@ -20,3 +20,18 @@ class PostModelTest(TestCase):
             author_id=1,
             status='published'
         )
+
+    def test_blog_content(self):
+        post = Post.postobjects.get(id=1)
+        cat = Category.objects.get(id=1)
+        author = f'{post.author}'
+        excerpt = f'{post.excerpt}'
+        title = f'{post.title}'
+        content = f'{post.content}'
+        status = f'{post.status}'
+        self.assertEqual(author, 'testuser')
+        self.assertEqual(title, 'Test Title')
+        self.assertEqual(content, 'Test Content')
+        self.assertEqual(status, 'published')
+        self.assertEqual(str(post), 'Test Title') # test model __str__
+        self.assertEqual(str(cat), 'django')
