@@ -48,3 +48,18 @@ class PostModelTest(TestCase):
         post.status = invalid_status
         with self.assertRaises(ValidationError):
             post.full_clean()
+
+    def test_postobjects_manager(self):
+        post1 = Post.objects.get(id=1)
+        post2 = Post.objects.create(
+            title='Draft Post',
+            excerpt='Draft excerpt',
+            content='Draft content',
+            slug='draft-post',
+            author=post1.author,
+            category=post1.category,
+            status='draft',
+        )
+        published_posts = Post.postobjects.all()
+        self.assertIn(post1, published_posts)
+        self.assertNotIn(post2, published_posts)
