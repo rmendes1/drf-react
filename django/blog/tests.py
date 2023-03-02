@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from blog.models import Post, Category 
 from django.core.exceptions import ValidationError
-
+from datetime import timedelta
 
 class PostModelTest(TestCase):
 
@@ -63,3 +63,18 @@ class PostModelTest(TestCase):
         published_posts = Post.postobjects.all()
         self.assertIn(post1, published_posts)
         self.assertNotIn(post2, published_posts)
+
+    def test_published_default(self):
+        post = Post.objects.create(
+            title='Test Post 2',
+            excerpt='Test excerpt 2',
+            content='Test content 2',
+            slug='test-post-2',
+            author=User.objects.get(username='testuser'),
+            category=Category.objects.get(name='django'),
+            status='published',
+        )
+        self.assertLessEqual(
+            post.published - timezone.now(),
+            timedelta(seconds=1)
+    )
