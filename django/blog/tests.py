@@ -78,3 +78,29 @@ class PostModelTest(TestCase):
             post.published - timezone.now(),
             timedelta(seconds=1)
     )
+
+    def test_ordering(self):
+        post1 = Post.objects.get(id=1)
+        post2 = Post.objects.create(
+            title='Test Post 2',
+            excerpt='Test excerpt 2',
+            content='Test content 2',
+            slug='test-post-2',
+            author=post1.author,
+            category=post1.category,
+            status='published',
+            published=post1.published - timedelta(days=1),
+        )
+        post3 = Post.objects.create(
+            title='Test Post 3',
+            excerpt='Test excerpt 3',
+            content='Test content 3',
+            slug='test-post-3',
+            author=post1.author,
+            category=post1.category,
+            status='published',
+            published=post1.published + timedelta(days=1),
+        )
+        posts = list(Post.objects.all())
+        self.assertEqual(posts, [post3, post1, post2])
+    
