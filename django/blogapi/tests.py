@@ -9,7 +9,7 @@ class PostTests(APITestCase):
 
     def test_view_posts(self):
 
-        url = reverse('blog_api:listcreate')
+        url = reverse('blogapi:listcreate')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
