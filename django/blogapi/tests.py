@@ -8,77 +8,71 @@ from rest_framework.test import APIClient
 
 class PostTests(APITestCase):
 
+    def setUp(self):
+        self.client = APIClient()
+        self.category = Category.objects.create(name='django')
+        self.user1 = User.objects.create_user(username='testuser1', password='1234567')
+        self.user2 = User.objects.create_user(username='testuser2', password='12345678')
+        self.post = Post.objects.create(
+            category=self.category,
+            title='Post Title',
+            excerpt='Excerpt 1',
+            content='Content 1',
+            author=self.user1,
+            status='published',
+        )
+
     def test_view_posts(self):
         """Tests if a user can see the posts list"""
-        client = APIClient()
-        self.testuser1 = User.objects.create_user(username='testuser1', password='1234567')
-        client.login(username=self.testuser1.username, password='1234567')
+        self.client.force_login(self.user1)
         url = reverse('blogapi:listcreate')
-        response = client.get(url, format='json')
+        response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
     
     def create_post(self):
-        self.test_category = Category.objects.create(name='django')
-        self.testuser = User.objects.create_user(username='testuser', password='testpass')
-
-        data = {"title": "new",
-                "author": 1,
-                "excerpt": "new",
-                "content": "new"
-                }
-
+        """Tests if a user can create a post"""
+        self.client.force_login(self.user1)
         url = reverse('blogapi:listcreate')
+        data = {
+            "title": "New",
+            "author": 1,
+            "excerpt": "New",
+            "content": "New",
+            "category": self.category.id
+        }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
     def test_post_update(self):
         """Tests if a different user can edit a post from another author"""
-        client = APIClient()
 
-        self.test_category = Category.objects.create(name='django')
-        self.testuser1 = User.objects.create_user(username='testuser1', password='1234567') # this is going to be the post author
-        self.testuser2 = User.objects.create_user(username='testuser2', password='12345678') # this is to test if this user can change the post
-
-        Post.objects.create(
-            category_id=1,
-            title='Post Title',
-            excerpt='Excerpt 1',
-            content='Content 1',
-            author_id=1,
-            status='published',
-        )
-
+        url = reverse('blogapi:detailcreate', kwargs={"pk": self.post.id})
+        
         # testing user1
-        client.login(username=self.testuser1.username, password='1234567')
-
-        url = reverse(('blogapi:detailcreate'), kwargs={"pk": 1})
-
-        response = client.put(
-            url, {
-                "id": 1,
-                "title": "New",
-                "author": 1,
-                "excerpt": "New",
-                "content": "New",
-                "status": "published"
-            }, format='json'
-        )
+        self.client.force_login(self.user1)
+        data = {
+            "title": "New",
+            "author": self.user1.id,
+            "excerpt": "New",
+            "content": "New",
+            "category": self.category.id,
+            "status": "published"
+        }
+        response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # testing user2
-        client.login(username=self.testuser2.username, password='12345678')
-
-        response = client.put(
-            url, {
-                "id": 1,
-                "title": "New",
-                "author": 1,
-                "excerpt": "New",
-                "content": "New",
-                "status": "published"
-            }, format='json'
-        )
+        self.client.force_login(self.user2)
+        data = {
+            "title": "New",
+            "author": self.user1.id,
+            "excerpt": "New",
+            "content": "New",
+            "category": self.category.id,
+            "status": "published"
+        }
+        response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
