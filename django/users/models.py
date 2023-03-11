@@ -41,9 +41,12 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
     start_date = models.DateTimeField(defalt=timezone.now)
     about = models.TextField(_('about'), max_length=500, blank=True)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['user_name', 'first_name']
+
+    def __str__(self):
+        return self.user_name
